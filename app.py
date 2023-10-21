@@ -7,7 +7,7 @@ app = Flask(__name__)
 def hello_world():
     # Use subprocess to run the "mychatbot.py" script
     try:
-        subprocess.run(["python", "mychatbot.py"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        subprocess.run(["python", "my_basic_web_chatbot.py"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         return '<h1 style="color: white;">Hello, Cyber World!</h1>'
     except subprocess.CalledProcessError as e:
         # Handle any errors that occur when running the script
