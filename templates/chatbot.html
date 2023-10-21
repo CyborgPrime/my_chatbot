@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenAI Chatbot</title>
+</head>
+<body>
+    <h1>OpenAI Chatbot</h1>
+    <form method="POST">
+        <label for="question">Please enter a question or request (type 'quit' to exit):</label>
+        <input type="text" id="question" name="question" required>
+        <input type="submit" value="Ask">
+    </form>
+
+    {% if response %}
+    <div>
+        <strong>AI:</strong>
+        <p>{{ response }}</p>
+    </div>
+    {% endif %}
+</body>
+</html>
