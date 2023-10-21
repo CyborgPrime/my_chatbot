@@ -1,14 +1,12 @@
-# my_basic_web_chatbot.py (chatbot app)
-
 from flask import Flask, render_template, request
 import openai
 import os
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
+app = Flask(__name__)
 
-chatbot_app = Flask(__name__)  # Rename the Flask app instance
 
-@chatbot_app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def chatbot():
     if request.method == "POST":
         prompt = request.form.get("question")
@@ -37,4 +35,4 @@ def chatbot():
     return render_template("chatbot.html", response=None)
 
 if __name__ == "__main__":
-    chatbot_app.run(debug=True)  # Use chatbot_app.run() instead of app.run()
+    app.run(debug=True)  
