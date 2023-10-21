@@ -1,18 +1,42 @@
-from flask import Flask
-import subprocess
+from flask import Flask, render_template, request
+import openai
+import os
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
-    # Use subprocess to run the "mychatbot.py" script
-    try:
-        subprocess.run(["python", "my_basic_web_chatbot.py"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        return '<h1 style="color: white;">Hello, Cyber World!</h1>'
-    except subprocess.CalledProcessError as e:
-        # Handle any errors that occur when running the script
-        error_message = f"An error occurred: {e.stderr.decode()}"
-        return f'<p style="color: red;">{error_message}</p>'
+@app.route("/", methods=["GET", "POST"])
+def chatbot():
+    if request.method == "POST":
+        prompt = request.form.get("question")
+
+        if prompt.lower() == "quit":
+            return render_template("chatbot.html", response="You have quit the conversation.")
+
+        result = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a game master bot. You can create compelling adventures and present them through a text adventure simulator interface."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        response = result.choices[0].message.content
+
+        return render_template("chatbot.html", response=response)
+
+    return render_template("chatbot.html", response=None)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
