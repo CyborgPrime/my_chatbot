@@ -6,7 +6,6 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 app = Flask(__name__)
 
-@app.route('/')
 @app.route("/", methods=["GET", "POST"])
 def chatbot():
     if request.method == "POST":
