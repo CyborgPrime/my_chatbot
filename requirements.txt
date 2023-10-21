@@ -1,4 +1,3 @@
 Flask
 Gunicorn
-pip install --upgrade pip
-pip install --upgrade openai
+/opt/render/project/src/.venv/bin/python -m pip install --upgrade
