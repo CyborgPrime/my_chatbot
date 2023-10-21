@@ -1,2 +1,4 @@
 Flask
 Gunicorn
+pip install --upgrade pip
+pip install --upgrade openai
