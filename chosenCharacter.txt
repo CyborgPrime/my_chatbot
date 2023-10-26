@@ -1,0 +1,6 @@
+Knight
+Description: A noble warrior skilled in combat and chivalry.
+Quirky Flaw: Has a fear of spiders.
+Expert Skill: Swordsmanship and shield techniques.
+Advanced Skills: Mounted combat, leadership.
+Proficient Skills: Armor crafting, horsemanship, diplomacy.
