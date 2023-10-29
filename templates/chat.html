@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Game Master</title>
+    <style>
+        /* Add CSS styles for the chat history container */
+        .chat-history-container {
+            height: 400px; /* Set the desired height */
+            overflow-y: scroll; /* Enable vertical scrolling */
+            border: 1px solid #ccc; /* Add a border for clarity */
+            padding: 10px; /* Add padding for spacing */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Virtual Game Master</h1>
+        <!-- Chat History Container with Scrolling -->
+        <div class="chat-history-container" id="chat-history-container">
+            <div id="chat-history">
+                {% for message in history %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- User Input Form -->
+        <form method="POST" action="/" id="chat-form">
+            <input type="text" name="user_input" placeholder="Type your message..." id="user-input">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <!-- Add JavaScript to focus the input field when the page loads and scroll to the bottom of the chat history -->
+    <script>
+        // Get the input field element
+        const userInput = document.getElementById('user-input');
+
+        // Get the chat history container element
+        const chatHistoryContainer = document.getElementById('chat-history-container');
+
+        // Function to focus the input field
+        function focusInput() {
+            userInput.focus();
+        }
+
+        // Function to scroll to the bottom of the chat history
+        function scrollToBottom() {
+            chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+        }
+
+        // Focus the input field and scroll to the bottom when the page loads
+        window.onload = function () {
+            focusInput();
+            scrollToBottom();
+        };
+
+        // You can call the scrollToBottom() function whenever you add new messages to the chat history to ensure it's always scrolled to the bottom.
+        // For example, after adding a new message, you can call scrollToBottom() like this:
+        // scrollToBottom();
+    </script>
+</body>
+</html>
