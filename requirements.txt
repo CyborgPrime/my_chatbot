@@ -1,4 +1,4 @@
 Flask
 Gunicorn
 openai==0.27.8
-langchain==0.0.232
+langchain==0.0.23
