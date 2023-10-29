@@ -10,15 +10,12 @@ import openai
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
-
 app = Flask(__name__)
 
 # Initialize the Flask session with a secret key
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
-history = []
-
-# Initialize the AI
+# Define the AI model and parameters
 aiModel = "gpt-3.5-turbo"
 aiTemperature = 0.5
 aiHistory = 10
@@ -39,6 +36,18 @@ gameLoopPromptTemplate = PromptTemplate(
     template=gameLoopTemplate
 )
 
+# Initialize the chat history for each session
+def init_session_history():
+    return []
+
+def get_session_history():
+    session_key = request.remote_addr
+    return session.get(session_key, init_session_history())
+
+def set_session_history(history):
+    session_key = request.remote_addr
+    session[session_key] = history
+
 chatgpt_chain = LLMChain(
     llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
     prompt=gameLoopPromptTemplate,
@@ -46,10 +55,9 @@ chatgpt_chain = LLMChain(
     memory=ConversationBufferWindowMemory(k=aiHistory),
 )
 
-
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    global history
+    history = get_session_history()
 
     if request.method == 'POST':
         user_input = request.form['user_input']
@@ -61,8 +69,10 @@ def chat():
         history.append(f'User: {user_input}')
         history.append(response)
 
-    return render_template('chat.html', history=history)
+        # Update the user's chat history in the session
+        set_session_history(history)
 
+    return render_template('chat.html', history=history)
 
 if __name__ == '__main__':
     app.run(debug=True)
