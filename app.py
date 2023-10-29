@@ -4,9 +4,10 @@ from flask import Flask, render_template, request
 from langchain import LLMChain, PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chat_models import ChatOpenAI
-# import os
+import os
+import openai
 
-# openai.api_key = os.environ["OPENAI_API_KEY"]
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 app = Flask(__name__)
 
