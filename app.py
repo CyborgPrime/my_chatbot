@@ -17,7 +17,7 @@ history = []
 aiModel = "gpt-3.5-turbo"
 aiTemperature = 0.5
 aiHistory = 10
-aiVerbosity = True
+aiVerbosity = False
 
 # Define the game loop prompt
 gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user."
