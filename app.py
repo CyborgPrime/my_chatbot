@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, session
 import os
-import uuid  # For generating unique session IDs
 
 # import module dependencies
 from langchain import LLMChain, PromptTemplate
@@ -41,20 +40,13 @@ gameLoopPromptTemplate = PromptTemplate(
 def init_session_history():
     return []
 
-def get_or_create_session_id():
-    if 'session_id' not in session:
-        session['session_id'] = str(uuid.uuid4())  # Generate a unique session ID
-    return session['session_id']
-
 def get_session_history():
-    session_id = get_or_create_session_id()
-    if session_id not in session:
-        session[session_id] = init_session_history()
-    return session[session_id]
+    if 'history' not in session:
+        session['history'] = init_session_history()
+    return session['history']
 
 def set_session_history(history):
-    session_id = get_or_create_session_id()
-    session[session_id] = history
+    session['history'] = history
 
 chatgpt_chain = LLMChain(
     llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
