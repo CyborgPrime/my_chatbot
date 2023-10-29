@@ -22,7 +22,7 @@ aiHistory = 20
 aiVerbosity = True
 
 # Define the game loop prompt
-gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user. Do not preface your response with AI:"
+gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user. At each new location, be sure to specify the exits and the route the player took frm the previous location. Do not preface your response with AI:"
 
 # Define the bot template for the game loop
 gameLoopTemplate = """
