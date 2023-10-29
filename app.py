@@ -17,9 +17,9 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 # Define the AI model and parameters
 aiModel = "gpt-3.5-turbo"
-aiTemperature = 0.5
+aiTemperature = 0.2
 aiHistory = 20
-aiVerbosity = False
+aiVerbosity = True
 
 # Define the game loop prompt
 gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user. Do not preface your response with AI:"
