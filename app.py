@@ -21,7 +21,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True  # This is recommended for better security
-app.config['SESSION_KEY_PREFIX'] = 'your_prefix_here'  # Change this to a unique prefix
+app.config['SESSION_KEY_PREFIX'] = 'vGM_AcE'  # Change this to a unique prefix
 
 # Initialize the Flask-Session extension
 Session(app)
@@ -47,18 +47,6 @@ gameLoopPromptTemplate = PromptTemplate(
     template=gameLoopTemplate
 )
 
-# Initialize the chat history for each session
-def init_session_history():
-    return []
-
-def get_session_history():
-    if 'history' not in session:
-        session['history'] = init_session_history()
-    return session['history']
-
-def set_session_history(history):
-    session['history'] = history
-
 chatgpt_chain = LLMChain(
     llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
     prompt=gameLoopPromptTemplate,
@@ -68,22 +56,27 @@ chatgpt_chain = LLMChain(
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    history = get_session_history()
-
     if request.method == 'POST':
         user_input = request.form['user_input']
         combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}"
+        history = session.get('history', [])  # Retrieve the chat history from the session
+
         response = chatgpt_chain.predict(
             history=history,
             combined_input=combined_input
         )
+
         history.append(f'User: {user_input}')
         history.append(response)
 
-        # Update the user's chat history in the session
-        set_session_history(history)
+        # Store the updated chat history back in the session
+        session['history'] = history
 
-    return render_template('chat.html', history=history)
+    else:
+        # If it's a GET request, initialize an empty chat history in the session
+        session['history'] = []
+
+    return render_template('chat.html', history=session['history'])
 
 if __name__ == '__main__':
     app.run(debug=True)
