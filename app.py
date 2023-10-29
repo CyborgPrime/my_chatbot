@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, session
 from flask_session import Session
 import os
-import redis
 
 # Import module dependencies
 from langchain import LLMChain, PromptTemplate
@@ -17,11 +16,12 @@ app = Flask(__name__)
 # Initialize the Flask session with a secret key
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
-# Configure Flask-Session to use Redis
+# Configure Flask-Session to use the provided Redis URI
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True  # This is recommended for better security
 app.config['SESSION_KEY_PREFIX'] = 'vGM_AcE'  # Change this to a unique prefix
+app.config['SESSION_REDIS'] = 'redis://red-ckvemkramefc73815rug:6379'  # Specify the Redis URI here
 
 # Initialize the Flask-Session extension
 Session(app)
