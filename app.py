@@ -41,12 +41,12 @@ def init_session_history():
     return []
 
 def get_session_history():
-    session_key = request.remote_addr
-    return session.get(session_key, init_session_history())
+    if 'history' not in session:
+        session['history'] = init_session_history()
+    return session['history']
 
 def set_session_history(history):
-    session_key = request.remote_addr
-    session[session_key] = history
+    session['history'] = history
 
 chatgpt_chain = LLMChain(
     llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
