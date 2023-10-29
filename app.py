@@ -63,7 +63,7 @@ def chat():
         user_input = request.form['user_input']
         combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}"
         response = chatgpt_chain.predict(
-            history="\n".join(history),
+            history=history,
             combined_input=combined_input
         )
         history.append(f'User: {user_input}')
@@ -72,7 +72,7 @@ def chat():
         # Update the user's chat history in the session
         set_session_history(history)
 
-    return render_template('chat.html', history=history)
+    return render_template('chat.html', history="\n".join(history))
 
 if __name__ == '__main__':
     app.run(debug=True)
