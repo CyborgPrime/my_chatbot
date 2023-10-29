@@ -1,15 +1,17 @@
-from flask import Flask, render_template, request, session
-import os
+from flask import Flask, render_template, request
 
 # import module dependencies
 from langchain import LLMChain, PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chat_models import ChatOpenAI
+import os
+import openai
+
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 app = Flask(__name__)
 
-# Initialize the Flask session with a secret key
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+history = []
 
 # Initialize the AI
 aiModel = "gpt-3.5-turbo"
@@ -20,29 +22,29 @@ aiVerbosity = False
 # Define the game loop prompt
 gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user."
 
-# Initialize a dictionary to store chat histories for different user sessions
-chat_histories = {}
+# Define the bot template for the game loop
+gameLoopTemplate = """
+    {history}
+    {combined_input}
+"""
 
-# Define a function to get or initialize the chat history for a session
-def get_or_initialize_history(session_id):
-    if session_id not in chat_histories:
-        chat_histories[session_id] = []
-    return chat_histories[session_id]
+# Load the variables into the gameLoopTemplate
+gameLoopPromptTemplate = PromptTemplate(
+    input_variables=["history", "combined_input"],
+    template=gameLoopTemplate
+)
 
-# ... Other code ...
+chatgpt_chain = LLMChain(
+    llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
+    prompt=gameLoopPromptTemplate,
+    verbose=aiVerbosity,
+    memory=ConversationBufferWindowMemory(k=aiHistory),
+)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    # Get the user's session ID
-    session_id = session.get('session_id', None)
-
-    # Get or generate a session ID if it doesn't exist
-    if session_id is None:
-        session_id = str(hash(request.remote_addr + str(time.time())))
-        session['session_id'] = session_id
-
-    # Get or initialize the chat history for this session
-    history = get_or_initialize_history(session_id)
+    global history
 
     if request.method == 'POST':
         user_input = request.form['user_input']
@@ -55,6 +57,7 @@ def chat():
         history.append(response)
 
     return render_template('chat.html', history=history)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
