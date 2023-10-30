@@ -36,17 +36,17 @@ gameLoopPromptTemplate = PromptTemplate(
     template=gameLoopTemplate
 )
 
-# Initialize the chat history for each user session using 'user' as the key
-def init_user_session_history(user_key):
+# Initialize the chat history for each session
+def init_session_history():
     return []
 
-def get_user_session_history(user_key):
-    if user_key not in session:
-        session[user_key] = init_user_session_history(user_key)
-    return session[user_key]
+def get_session_history():
+    if 'history' not in session:
+        session['history'] = init_session_history()
+    return session['history']
 
-def set_user_session_history(user_key, history):
-    session[user_key] = history
+def set_session_history(history):
+    session['history'] = history
 
 chatgpt_chain = LLMChain(
     llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
@@ -57,13 +57,8 @@ chatgpt_chain = LLMChain(
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    # Extract the username from the query parameters
-    username = request.args.get('username')
     
-    # Use 'user' as the session key for this user's chat history
-    user_session_key = 'user_' + username
-
-    history = get_user_session_history(user_session_key)
+    history = get_session_history()
 
     if request.method == 'POST':
         user_input = request.form['user_input']
@@ -76,7 +71,7 @@ def chat():
         history.append(response)
 
         # Update the user's chat history in the session
-        set_user_session_history(user_session_key, history)
+        set_session_history(history)
 
     return render_template('chat.html', history=history)
 
