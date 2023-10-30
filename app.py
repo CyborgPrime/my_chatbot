@@ -36,17 +36,17 @@ gameLoopPromptTemplate = PromptTemplate(
     template=gameLoopTemplate
 )
 
-# Initialize the chat history for each session using the 'username' as the key
-def init_user_session(username):
+# Initialize the chat history for each session
+def init_session_history():
     return []
 
-def get_user_session(username):
-    if username not in session:
-        session[username] = init_user_session(username)
-    return session[username]
+def get_session_history():
+    if 'history' not in session:
+        session['history'] = init_session_history()
+    return session['history']
 
-def set_user_session(username, user_session):
-    session[username] = user_session
+def set_session_history(history):
+    session['history'] = history
 
 chatgpt_chain = LLMChain(
     llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
@@ -57,28 +57,23 @@ chatgpt_chain = LLMChain(
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    # Extract the username from the query parameters
-    username = request.args.get('username')
     
-    if not username:
-        return "Please provide a username as a query parameter.", 400
+    history = get_session_history()
 
-    user_session = get_user_session(username)
-    
     if request.method == 'POST':
         user_input = request.form['user_input']
         combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}"
         response = chatgpt_chain.predict(
-            history=user_session,
+            history=history,
             combined_input=combined_input
         )
-        user_session.append(f'User: {user_input}')
-        user_session.append(response)
+        history.append(f'User: {user_input}')
+        history.append(response)
 
         # Update the user's chat history in the session
-        set_user_session(username, user_session)
+        set_session_history(history)
 
-    return render_template('chat.html', history=user_session, username=username)
+    return render_template('chat.html', history=history)
 
 if __name__ == '__main__':
     app.run(debug=True)
