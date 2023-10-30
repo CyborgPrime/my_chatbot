@@ -78,7 +78,7 @@ def chat():
         # Update the user's chat history in the session
         set_user_session(username, user_session)
 
-    return render_template('chat.html', history=user_session)
+    return render_template('chat.html', history=user_session, username=username)
 
 if __name__ == '__main__':
     app.run(debug=True)

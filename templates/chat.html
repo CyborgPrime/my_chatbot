@@ -44,8 +44,11 @@
         <!-- User Input Form -->
         <form method="POST" action="/" id="chat-form">
             <input type="text" name="user_input" placeholder="Type your message..." id="user-input" style="width: 100%; padding: 10px;">
+            <!-- Add a hidden input field for the username parameter -->
+            <input type="hidden" name="username" value="{{ username }}">
             <button type="submit">Send</button>
         </form>
+
     </div>
 
     <!-- Add JavaScript to focus the input field when the page loads and scroll to the bottom of the chat history -->
