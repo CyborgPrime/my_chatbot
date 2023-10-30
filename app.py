@@ -19,10 +19,10 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 aiModel = "gpt-3.5-turbo"
 aiTemperature = 0.2
 aiHistory = 20
-aiVerbosity = False
+aiVerbosity = True
 
 # Define the game loop prompt
-gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user. At each new location, be sure to specify the exits and the route the player took frm the previous location. Do not preface your response with AI:"
+gameLoopPrompt = "You are a text adventure game simulator, guiding the user through a story inspired by The Adventures of Robin Hood, with the user as the protagonist. Keep responses concise, provide exits and describe the route from the previous location. Avoid long paragraphs and preface responses with AI."
 
 # Define the bot template for the game loop
 gameLoopTemplate = """
