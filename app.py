@@ -62,7 +62,7 @@ def chat():
 
     if request.method == 'POST':
         user_input = request.form['user_input']
-        combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
+        combined_input = f"System: you are a text adventure simulator\nHuman: look around\nAssistant:You stand in a clearing in the forest. You see a road to the west.\n---\nSystem: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
         response = chatgpt_chain.predict(
             history=history,
             combined_input=combined_input
