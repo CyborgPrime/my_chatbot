@@ -3,7 +3,7 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-@app.route('/greet', methods=['GET'])
+@app.route('/', methods=['GET'])
 def greet_user():
     # Extract the username from the query parameters
     username = request.args.get('username')
