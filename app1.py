@@ -57,7 +57,6 @@ chatgpt_chain = LLMChain(
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    
     history = get_session_history()
 
     if request.method == 'POST':
