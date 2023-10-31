@@ -62,7 +62,7 @@ def chat():
 
     if request.method == 'POST':
         user_input = request.form['user_input']
-        combined_input = f"System: you are a text adventure simulator\nHuman: look around\nAssistant:You stand in a clearing in the forest. You see a road to the west.\n---\nSystem: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
+        combined_input = f"System: you are a text adventure simulator taking the user through an adventure based on the traveller rpg 3rd imperium setting. the player is sent on a mission by the scout service. take turns with the player, never act on the player's behalf. make sure to mention exits from the current location. fill the world with opportunities for interaction with other characters who have a life and motivations of their own. follow the story circle structure.\nHuman: look around\nAssistant:You stand in a clearing in the forest. You see a road to the west.\n---\nSystem: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
         response = chatgpt_chain.predict(
             history=history,
             combined_input=combined_input
