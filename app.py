@@ -17,7 +17,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 # Define the AI model and parameters
 aiModel = "gpt-3.5-turbo"
-aiTemperature = 0.2
+aiTemperature = 0.6
 aiHistory = 20
 aiVerbosity = True
 
@@ -62,7 +62,7 @@ def chat():
 
     if request.method == 'POST':
         user_input = request.form['user_input']
-        combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
+        combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}\n"
         response = chatgpt_chain.predict(
             history=history,
             combined_input=combined_input
