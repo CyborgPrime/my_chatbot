@@ -17,7 +17,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 # Define the AI model and parameters
 aiModel = "gpt-3.5-turbo"
-aiTemperature = 0.5
+aiTemperature = 0.2
 aiHistory = 20
 aiVerbosity = True
 
@@ -58,7 +58,6 @@ chatgpt_chain = LLMChain(
 
 @app.route('/', methods=['GET', 'POST'])
 def chat():
-    
     history = get_session_history()
 
     if request.method == 'POST':

@@ -22,12 +22,13 @@ aiHistory = 20
 aiVerbosity = True
 
 # Define the game loop prompt
-gameLoopPrompt = "You are a text adventure game simulator taking the user through a story similar to The Adventures of Robin Hood but with the user as the protagonist. Avoid large blocks of text; be concise and take turns with the user. At each new location, be sure to specify the exits and the route the player took frm the previous location. Do not preface your response with AI:"
+gameLoopPrompt = "You're a text adventure game simulator in the Traveller RPG's '3rd Imperium' setting, with the user as the main character on a mission from the Imperial Scout Services. Follow the story circle framework, provide interactions with objects and NPCs, and keep responses brief. Offer exit options and describe routes from previous locations. Avoid lengthy paragraphs and don't start responses with 'AI.' Always let the user make decisions, ensuring actions have consequences in the game. For example, when the user says 'Look around,' respond with narrative descriptions that immerse them into the game world and guide them through their mission, such as describing the Imperial Scout Base and its surroundings."
 
 # Define the bot template for the game loop
 gameLoopTemplate = """
     {history}
     {combined_input}
+    Assistant:
 """
 
 # Load the variables into the gameLoopTemplate
