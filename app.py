@@ -28,6 +28,7 @@ gameLoopPrompt = "You're a text adventure game simulator in the Traveller RPG's 
 gameLoopTemplate = """
     {history}
     {combined_input}
+    Assistant:
 """
 
 # Load the variables into the gameLoopTemplate
@@ -62,7 +63,7 @@ def chat():
 
     if request.method == 'POST':
         user_input = request.form['user_input']
-        combined_input = f"\n---\nSystem: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
+        combined_input = f"System: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
         response = chatgpt_chain.predict(
             history=history,
             combined_input=combined_input
