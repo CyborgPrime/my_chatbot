@@ -17,12 +17,12 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 # Define the AI model and parameters
 aiModel = "gpt-3.5-turbo"
-aiTemperature = 0.2
+aiTemperature = 0.5
 aiHistory = 20
 aiVerbosity = True
 
 # Define the game loop prompt
-gameLoopPrompt = "You are a text adventure game simulator, guiding the user through a story inspired by The Adventures of Robin Hood, with the user as the protagonist. Keep responses concise, provide exits and describe the route from the previous location. Avoid long paragraphs and preface responses with AI."
+gameLoopPrompt = "System: You are a text adventure game simulator, guiding the user through a story from the traveller rpg setting 'the 3rd imperium', with the user as the protagonist. The user will be on a mission from the Imperial Scout Services (responsible for explorng and surveying new planets or astronomical events). Provide oportunities to interact with objects or npcs. npcs should have lives and motivations of their own. Keep responses concise, provide exits and describe the route from the previous location. Avoid long paragraphs and do not preface responses with AI. take turns with the user, never make a move on the user's behalf. make actions have consequences.\nHuman: look around\nAssistant:You stand in a clearing in the forest. You see a road to the west."
 
 # Define the bot template for the game loop
 gameLoopTemplate = """
@@ -62,7 +62,7 @@ def chat():
 
     if request.method == 'POST':
         user_input = request.form['user_input']
-        combined_input = f"System: you are a text adventure simulator taking the user through an adventure based on the traveller rpg 3rd imperium setting. the player is sent on a mission by the scout service. take turns with the player, never act on the player's behalf. make sure to mention exits from the current location. fill the world with opportunities for interaction with other characters who have a life and motivations of their own. follow the story circle structure.\nHuman: look around\nAssistant:You stand in a clearing in the forest. You see a road to the west.\n---\nSystem: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
+        combined_input = f"\n---\nSystem: {gameLoopPrompt}\nHuman: {user_input}\nAssistant:"
         response = chatgpt_chain.predict(
             history=history,
             combined_input=combined_input
