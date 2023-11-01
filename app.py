@@ -13,6 +13,7 @@ app.config['SESSION_TYPE'] = 'filesystem'  # Use filesystem-based sessions
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
 # app.config['SESSION_FILE_DIR'] = '/session_data'  # Point to the virtual disk
 # app.config['SESSION_FILE_THRESHOLD'] = 500
+app.config['SESSION_FILE_DIR'] = '/session_data'  # Point to the mounted disk
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
