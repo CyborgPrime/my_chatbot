@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session
+from flask_session import Session
 import os
 
 # import module dependencies
@@ -13,8 +14,14 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 app = Flask(__name__)
 
-# Initialize the Flask session with a secret key
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+# Configure Flask-Session to use server-side sessions
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')  # Specify your session file directory
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
+
+Session(app)
 
 # Define the AI model and parameters
 aiModel = "gpt-3.5-turbo"
@@ -45,7 +52,9 @@ def init_session_history():
 def get_session_history():
     if 'history' not in session:
         session['history'] = init_session_history()
-    return session['history']
+    return session.get('history', [])  # Use the list directly
+
+
 
 def set_session_history(history):
     session['history'] = history

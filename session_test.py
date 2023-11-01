@@ -1,16 +1,19 @@
 from flask import Flask, render_template, request, session
+from flask_sqlalchemy import SQLAlchemy
+from flask_session import Session  # Import Flask-Session
 import os
+import secrets  # Import the secrets module
+import uuid  # Import the uuid module for generating session IDs
 
-# import module dependencies
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+# Import module dependencies
+from langchain import LLMChain
 from langchain.memory import ConversationBufferWindowMemory
-from langchain.chat_models import ChatOpenAI
 
 import openai
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
+# Create the Flask app
 app = Flask(__name__)
 
 # Initialize the Flask session with a secret key
@@ -32,31 +35,50 @@ gameLoopTemplate = """
     Assistant:
 """
 
-# Load the variables into the gameLoopTemplate
-gameLoopPromptTemplate = PromptTemplate(
-    input_variables=["history", "combined_input"],
-    template=gameLoopTemplate
+# Define a function to generate a unique session ID
+def generate_session_id():
+    return str(uuid.uuid4())
+
+# Initialize Flask-Session with your app and SQLAlchemy database
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+
+# Initialize the SQLAlchemy database connection
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/vgm_sessions'
+db = SQLAlchemy(app)
+
+Session(app)
+
+# Define a model for the session table
+class SessionData(db.Model):
+    __tablename__ = 'sessions'  # Specify the table name here
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(255), unique=True)
+    player_id = db.Column(db.String(255))
+    chat_history = db.Column(db.Text)
+
+# Initialize the AI chat model
+chatgpt_chain = LLMChain(
+    llm=openai.Completion.create,
+    prompt=gameLoopTemplate,
+    verbose=aiVerbosity,
+    memory=ConversationBufferWindowMemory(k=aiHistory),
 )
 
 # Initialize the chat history for each session
 def init_session_history():
     return []
 
+# Define a function to get the session history
 def get_session_history():
     if 'history' not in session:
         session['history'] = init_session_history()
     return session['history']
 
+# Define a function to set the session history
 def set_session_history(history):
     session['history'] = history
 
-chatgpt_chain = LLMChain(
-    llm=ChatOpenAI(temperature=aiTemperature, model_name=aiModel),
-    prompt=gameLoopPromptTemplate,
-    verbose=aiVerbosity,
-    memory=ConversationBufferWindowMemory(k=aiHistory),
-)
-
+# Route for the chat interface
 @app.route('/', methods=['GET', 'POST'])
 def chat():
     history = get_session_history()
@@ -77,4 +99,7 @@ def chat():
     return render_template('chat.html', history=history)
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Create the database table for sessions if it doesn't exist
+
     app.run(debug=True)

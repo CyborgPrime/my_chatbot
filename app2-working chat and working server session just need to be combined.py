@@ -1,3 +1,33 @@
+from flask import Flask, session
+from flask_session import Session
+import os
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+
+# Configure Flask-Session
+# app.config['SESSION_PERMANENT'] = False
+# app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_TYPE'] = 'sqlalchemy'  # You can change this to other options if needed
+app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:@localhost:3306/vgm_sessions"
+
+db= SQLAlchemy(app)
+app.config['SESSION_SQLALCHEMY'] = db
+
+# Initialize Flask-Session
+sesh = Session(app)
+
+
+def get_session_id():
+    # Access the session ID
+    session_id = session.sid
+
+    return f"Session ID: {session_id}"
+
+
+
+
 from flask import Flask, render_template, request, session
 import os
 
@@ -76,5 +106,14 @@ def chat():
 
     return render_template('chat.html', history=history)
 
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+
