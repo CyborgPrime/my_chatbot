@@ -5,17 +5,18 @@
     <style>
         #chat-box {
             height: 400px;
-            overflow-y: auto;
+            overflow-y: scroll;
             border: 1px solid #ccc;
             padding: 10px;
-            margin-bottom: 10px;
-            color: white
+            background-color: black;
+            color: white;
+        }
+        .user-text {
+            color: lightblue;
         }
     </style>
 </head>
 <body>
-
-<h1>Chat with AI</h1>
 
 <div id="chat-box">
 </div>
@@ -35,7 +36,7 @@ async function sendMessage() {
     });
     const data = await response.json();
     const ai_response = data.ai_response;
-    document.getElementById('chat-box').innerHTML += `<p>Player: ${user_input}</p>`;
+    document.getElementById('chat-box').innerHTML += `<p class="user-text">Player: ${user_input}</p>`;
     document.getElementById('chat-box').innerHTML += `<p>AI: ${ai_response}</p>`;
     document.getElementById('user-input').value = '';
     document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
