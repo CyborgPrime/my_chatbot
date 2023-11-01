@@ -5,8 +5,6 @@ from flask_session import Session  # Import for session-based storage
 import os
 import openai
 
-
-
 app = Flask(__name__)
 
 app.config['SESSION_TYPE'] = 'filesystem'  # Use filesystem-based sessions
