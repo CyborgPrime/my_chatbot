@@ -1,74 +1,77 @@
-from flask import Flask, render_template, request, jsonify, session
-import os
-from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferWindowMemory
+from flask import Flask, render_template, request, jsonify, session, make_response
+from flask_session import Session
 from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.chains import ConversationChain
+import os
+import openai
+import json
 
 app = Flask(__name__)
 
-app.config['SESSION_FILE_DIR'] = '/session_data'  # Directory to store session files, pointing to a mounted disk
+AI_WINDOW_SIZE = 20
+
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
+app.config['SESSION_FILE_DIR'] = './session_data'
 
-api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-AI_WINDOW_SIZE = 20 
+Session(app)
 
-template = """
-you are a game master that uses an advanced text adventure interface to guide players through epic adventures in the Traveller sci-fi rpg 'third imperium' setting where the player works for the imperial scout service.
-actions have consequences. 
-follow the 'hero's journey' story structure. 
-Clear World Descriptions:Ensure clear and consistent game world descriptions before presenting choices for informed decisions.
-Predict Player Choices:Anticipate player actions and their consequences to maintain a coherent story structure.
-Use Conditional Statements:Employ conditional responses for story consistency, acknowledging player choices.
-Create Compelling Opening:Craft an engaging opening scene with a personal connection to the player's character.
-Concise and Accurate:Keep responses concise and internally accurate for an immersive experience.
-Player's Character Name:Prompt the player to choose their in-game character name.
-
-Current conversation:
-{history}
-Human: {input}
-AI Assistant:
-"""
-
-system_message_prompt = SystemMessagePromptTemplate.from_template(template)
-human_template = "{input}"
-human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
-chat = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-
-# Initialize the conversation chain with the ConversationBufferWindowMemory
-conversation = ConversationChain(
-    llm=chat,
-    prompt=chat_prompt,
-    memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
-    verbose=True
-)
+# Function to create a new conversation object for a session
+def create_new_conversation():
+    chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
+    conversation = ConversationChain(
+        llm=chat, 
+        memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
+        verbose=False
+    )
+    return conversation
 
 @app.route('/')
-def index():
-    session['history'] = []  # Initialize the history in the session
-    # Trigger an initial AI response for setting up the first entry
-    initial_message = conversation.predict(input="")
-    session['history'].append(initial_message)
-    return render_template('index.html', initial_message=initial_message)
+def home():
+    if 'messages' not in session:
+        session['messages'] = []
+    # Check if chat history cookie exists
+    chat_history = request.cookies.get('chat_history')
+    if chat_history:
+        # Parse and load chat history from the cookie
+        session['messages'] = json.loads(chat_history)
+    return render_template('chat.html')
 
-@app.route('/ask', methods=['POST'])
-def ask():
-    user_input = request.form['user_input']
+@app.route('/initiate_chat', methods=['GET'])
+def initiate_chat():
+    session['messages'] = []
+    # Create a new conversation for this session
+    session['conversation'] = create_new_conversation()
+    response = session['conversation'].predict(input="")
+    session['messages'].append({'user': 'AI', 'message': response})
+    session.modified = True
+    return jsonify({'reply': response})
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_input = request.json['message']
+    session['messages'].append({'user': 'User', 'message': user_input})
     
-    # Append user input to history
-    session['history'].append(f"Human: {user_input}")
-    
-    # Generate the AI response
-    ai_response = conversation.predict(input=user_input)
-    session['history'].append(f"AI: {ai_response}")
-    
-    # Keep only the last AI_WINDOW_SIZE entries
-    session['history'] = session['history'][-AI_WINDOW_SIZE:]
-    
-    return jsonify(ai_response=ai_response)
+    # Retrieve the conversation object for this session
+    conversation = session.get('conversation')
+    if conversation is None:
+        # Create a new conversation if it doesn't exist (shouldn't happen)
+        conversation = create_new_conversation()
+        session['conversation'] = conversation
+
+    response = conversation.predict(input=user_input)
+    session['messages'].append({'user': 'AI', 'message': response})
+    session.modified = True
+
+    # Store chat history in a cookie
+    response = jsonify({'reply': response})
+    chat_history_cookie = json.dumps(session['messages'])
+    response.set_cookie('chat_history', chat_history_cookie)
+
+    return response
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

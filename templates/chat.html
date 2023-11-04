@@ -2,30 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chat Interface</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <style>
+        #chat-box {
+            max-height: 400px; /* Adjust to suit your design */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-family: Arial, sans-serif; /* Default font for chat box */
+        }
+        .user-message {
+            background-color: lightblue;
+            font-family: Arial, sans-serif;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 2px;
+        }
+        .bot-message {
+            font-family: "Times New Roman", Times, serif;
+            font-size: larger;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 2px;
+        }
+        #user-input {
+            width: 80%;
+            padding: 10px;
+        }
+        #send-button {
+            width: 19%;
+        }
+    </style>
 </head>
 <body>
-    <div id="chat_window" style="height:400px; width:400px; overflow-y: scroll;">
+    <div id="chat-box">
+        <div class="bot-message">Starting Storyteller, please wait...</div>
     </div>
-
-    <form id="chat_form">
-        <input type="text" id="user_input" placeholder="Type your message...">
-        <input type="submit" value="Send">
-    </form>
+    <input type="text" id="user-input" placeholder="Type your message..." onkeyup="handleEnter(event)">
+    <button id="send-button" onclick="sendUserMessage()">Send</button>
 
     <script>
-        $(document).ready(function(){
-            $("#chat_form").on('submit', function(event){
-                event.preventDefault();
-                let user_input = $("#user_input").val();
-                $.post("/", {user_input: user_input}, function(data){
-                    $("#chat_window").append('<p>User: ' + user_input + '</p>');
-                    $("#chat_window").append('<p>Bob: ' + data.ai_response + '</p>');
+        function sendUserMessage() {
+            var userInput = document.getElementById('user-input').value;
+            var chatBox = document.getElementById('chat-box');
+            if (userInput.trim() !== '') {  // Check if the input is not just spaces
+                chatBox.innerHTML += `<div class="user-message">Player: ${userInput}</div>`;
+                chatBox.innerHTML += `<div id="waiting" class="bot-message">Waiting for GM...</div>`; // Add waiting placeholder with bot-message class for styling
+                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox
+                document.getElementById('user-input').value = '';  // Clear the input field
+                fetch('/chat', {
+                    method: 'POST',
+                    body: JSON.stringify({ 'message': userInput }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Replace the placeholder with the bot's response when it comes back
+                    var waitingMessage = document.getElementById('waiting');
+                    if (waitingMessage) {
+                        waitingMessage.outerHTML = `<div class="bot-message">GM: ${data.reply}</div>`;
+                    }
+                    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox again
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    var waitingMessage = document.getElementById('waiting');
+                    if (waitingMessage) {
+                        waitingMessage.outerHTML = `<div class="bot-message">Error: Could not get a reply from the server.</div>`;
+                    }
                 });
-                $("#user_input").val('');
+            }
+        }
+
+        function handleEnter(event) {
+            // Detect enter key press in the input field
+            if (event.keyCode === 13) {
+                event.preventDefault(); // Prevent the default action to submit the form
+                sendUserMessage();
+            }
+        }
+
+        function initiateChat() {
+            // Send initial message to the server to start the conversation
+            fetch('/initiate_chat')
+            .then(response => response.json())
+            .then(data => {
+                var chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML = `<div class="bot-message">GM: ${data.reply}</div>`;  // Replace placeholder with initial bot message
+                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox
             });
-        });
+        }
+
+        // When the window loads, initiate the chat
+        window.onload = initiateChat;
     </script>
 </body>
 </html>

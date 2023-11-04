@@ -1,61 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chat Interface</title>
-    <style>
-        #chat-box {
-            height: 400px;
-            overflow-y: scroll;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: black;
-            color: white;
-        }
-        .user-text {
-            color: lightblue;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <!-- Add any additional CSS or JS links here -->
 </head>
 <body>
+    <div id="chat-box">
+        <!-- Chat messages will be displayed here -->
+    </div>
+    <input type="text" id="user-input" placeholder="Type your message..." onkeyup="handleEnter(event)">
+    <button onclick="sendUserMessage()">Send</button>
 
-<div id="chat-box">
-    <!-- Messages will appear here -->
-</div>
+    <script>
+        function sendUserMessage() {
+            var userInput = document.getElementById('user-input').value;
+            document.getElementById('user-input').value = '';  // Clear the input after sending
+            fetch('/chat', {
+                method: 'POST',
+                body: JSON.stringify({ 'message': userInput }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                var chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML += `<div>User: ${userInput}</div>`;  // Display user message
+                chatBox.innerHTML += `<div>Bot: ${data.reply}</div>`;  // Display bot reply
+            });
+        }
 
-<!-- Use a form tag so the enter key can submit the form -->
-<form id="chat-form" action="javascript:void(0);">
-    <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
-    <button type="submit">Send</button>
-</form>
+        function handleEnter(event) {
+            // Number 13 is the "Enter" key on the keyboard
+            if (event.keyCode === 13) {
+                // Cancel the default action, if needed
+                event.preventDefault();
+                // Trigger the button element with a click
+                sendUserMessage();
+            }
+        }
 
-<script>
-// Attach an event listener to the form for the submit event
-document.getElementById('chat-form').onsubmit = function(event) {
-    sendMessage();
-};
+        function initiateChat() {
+            fetch('/initiate_chat')
+            .then(response => response.json())
+            .then(data => {
+                var chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML += `<div>Bot: ${data.reply}</div>`;  // Display initial bot message
+            });
+        }
 
-async function sendMessage() {
-    const userInputField = document.getElementById('user-input');
-    const user_input = userInputField.value;
-    const response = await fetch('/ask', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `user_input=${encodeURIComponent(user_input)}`
-    });
-    const data = await response.json();
-    const ai_response = data.ai_response;
-    const chatBox = document.getElementById('chat-box');
-    chatBox.innerHTML += `<p class="user-text">Player: ${user_input}</p>`;
-    chatBox.innerHTML += `<p>AI: ${ai_response}</p>`;
-    userInputField.value = '';
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-// The handleEnterKey function is no longer needed because the form submission is handling enter key event
-
-</script>
-
+        // Call the initiateChat function when the page is ready
+        window.onload = initiateChat;
+    </script>
 </body>
 </html>
