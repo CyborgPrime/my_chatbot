@@ -25,7 +25,7 @@ def create_new_conversation():
     conversation = ConversationChain(
         llm=chat, 
         memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
-        verbose=False
+        verbose=True
     )
     return conversation
 
