@@ -45,7 +45,13 @@ def initiate_chat():
     session['messages'] = []
     # Create a new conversation for this session
     session['conversation'] = create_new_conversation()
-    response = session['conversation'].predict(input="")
+    response = session['conversation'].predict(input="""
+                                               please simulate a game master taking me on an adventure in the Traveller RPG setting "3rd imperium".
+                                               player's character willwork for the IMperial Scout Services.
+                                               take turns and use a sophisticated text adventure interface.
+                                               do not break the immersive narrative.
+                                               begin by asking the user what name they want to go by and what type of adventure they want to go on.
+                                               """)
     session['messages'].append({'user': 'AI', 'message': response})
     session.modified = True
     return jsonify({'reply': response})
