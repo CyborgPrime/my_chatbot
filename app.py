@@ -13,7 +13,7 @@ AI_WINDOW_SIZE = 20
 
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
-app.config['SESSION_FILE_DIR'] = './session_data'
+app.config['SESSION_FILE_DIR'] = '/session_data'
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
