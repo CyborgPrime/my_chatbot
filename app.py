@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, jsonify, session, make_response
+from flask import Flask, render_template, request, jsonify, session
 from flask_session import Session
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
 import os
 import openai
-import json
 
 app = Flask(__name__)
 
@@ -33,25 +32,27 @@ def create_new_conversation():
 def home():
     if 'messages' not in session:
         session['messages'] = []
-    # Check if chat history cookie exists
-    chat_history = request.cookies.get('chat_history')
-    if chat_history:
-        # Parse and load chat history from the cookie
-        session['messages'] = json.loads(chat_history)
     return render_template('chat.html')
 
 @app.route('/initiate_chat', methods=['GET'])
 def initiate_chat():
     session['messages'] = []
-    # Create a new conversation for this session
     session['conversation'] = create_new_conversation()
     response = session['conversation'].predict(input="""
-                                               please simulate a game master taking me on an adventure in the Traveller RPG setting "3rd imperium".
-                                               player's character willwork for the IMperial Scout Services.
-                                               take turns and use a sophisticated text adventure interface.
-                                               do not break the immersive narrative.
-                                               begin by asking the user what name they want to go by and what type of adventure they want to go on.
-                                               """)
+Revised Prompt for ChatGPT as a Game Master in Traveller RPG Setting:
+Hello, ChatGPT! You're tasked with guiding me through an interactive narrative as a game master in the "3rd Imperium" setting of the Traveller RPG. Here's how you can effectively conduct the session:
+Character Introduction: Begin by inquiring about the name I wish to be addressed by and the kind of adventure I'm seeking (e.g., discovery, intrigue, conflict).
+Turn-based Interaction: Conduct the game in a turn-based manner, detailing the environment and scenarios before asking for my character's actions.
+Narrative Focus: Utilize a sophisticated text-based adventure style, rich in detail and character interaction, to maintain a deep level of immersion.
+Conflict Resolution: When conflicts arise, forgo traditional game mechanics in favor of narrative-driven outcomes based on relative strengths and weaknesses.
+Enemies: Present adversaries with varying levels of difficulty—henchmen should pose little challenge, captains should be on par with my character, and bosses should be formidable.
+Equipment: Mention any relevant gear, such as weapons and armor, that my character or the adversaries possess, influencing the outcome of these encounters.
+Story Progression: Allow my decisions to drive the story forward, ensuring that my actions have significant effects on the development of events.
+Consistent Difficulty: Ensure that the difficulty of encounters is consistent with the narrative context and the roles of different adversaries as established above.
+Now, let's proceed with the story setup:
+Inside the briefing room of the Imperial Scout Services, the air is charged with anticipation. A grizzled veteran, marked by years of service, greets you with a nod.
+"Scout, your reputation precedes you. But before we chart your course among the stars, what name shall I call you by? And what sort of venture are you looking for? Are you in the mood for unearthing ancient secrets, engaging in shadowy diplomacy, or standing valiantly against the tide of space pirates?"                                               
+                                               """)  # Your initiation text
     session['messages'].append({'user': 'AI', 'message': response})
     session.modified = True
     return jsonify({'reply': response})
@@ -61,10 +62,8 @@ def chat():
     user_input = request.json['message']
     session['messages'].append({'user': 'User', 'message': user_input})
     
-    # Retrieve the conversation object for this session
     conversation = session.get('conversation')
     if conversation is None:
-        # Create a new conversation if it doesn't exist (shouldn't happen)
         conversation = create_new_conversation()
         session['conversation'] = conversation
 
@@ -72,12 +71,7 @@ def chat():
     session['messages'].append({'user': 'AI', 'message': response})
     session.modified = True
 
-    # Store chat history in a cookie
-    response = jsonify({'reply': response})
-    chat_history_cookie = json.dumps(session['messages'])
-    response.set_cookie('chat_history', chat_history_cookie)
-
-    return response
+    return jsonify({'reply': response})
 
 if __name__ == '__main__':
     app.run(debug=True)
