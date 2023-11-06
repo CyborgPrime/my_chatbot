@@ -6,13 +6,15 @@
     <title>Chatbot Interface</title>
     <style>
         #chat-box {
-            color: red; /* Change text color to light blue */
             height: 400px; /* Adjust to suit your design */
             overflow-y: auto;
             border: 1px solid #ccc;
             padding: 10px;
             margin-bottom: 10px;
             font-family: Arial, sans-serif; /* Default font for chat box */
+        }
+        .error{
+            color: red; /* Change text color to light blue */
         }
         .user-message {
             color: lightblue; /* Change text color to light blue */
@@ -77,7 +79,7 @@
                     console.error('Error:', error);
                     var waitingMessage = document.getElementById('waiting');
                     if (waitingMessage) {
-                        waitingMessage.outerHTML = `<div class="bot-message">Error: Could not get a reply from the server.</div>`;
+                        waitingMessage.outerHTML = `<div class="bot-message error">Error: Could not get a reply from the server.</div>`;
                     }
                 });
             }

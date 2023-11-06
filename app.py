@@ -5,7 +5,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
 import os
-import openai
+
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
 app.config['SESSION_FILE_DIR'] = '/session_data'
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY")
 
 Session(app)
 
