@@ -19,16 +19,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 Session(app)
 
-# joomla/flask security
-# ALLOWED_IPS = ['173.236.155.235','127.0.0.1']
-
-# @app.before_request
-# def limit_ip_address():
-#     client_ip = request.remote_addr
-#     if client_ip not in ALLOWED_IPS:
-#         abort(403)
-# ---------------------
-
 # Function to create a new conversation object for a session
 def create_new_conversation():
     chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
