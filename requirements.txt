@@ -1,6 +1,0 @@
-Flask
-Gunicorn
-openai
-langchain
-redis
-flask_session
