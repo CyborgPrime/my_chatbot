@@ -20,7 +20,7 @@ Session(app)
 
 # Function to create a new conversation object for a session
 def create_new_conversation():
-    chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
+    chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True, request_timeout=120)
     conversation = ConversationChain(
         llm=chat, 
         memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
