@@ -1,64 +1,66 @@
-from flask import Flask, render_template, request, jsonify, session
-from flask_session import Session
-from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferWindowMemory
-from langchain.chains import ConversationChain
+from flask import Flask, render_template, request, jsonify
 import os
-import openai
+from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
 
+# Flask app setup
 app = Flask(__name__)
 
+# Environment variable for OpenAI API key
+api_key = os.getenv("OPENAI_API_KEY")
+
+# AI Window Size - Number of moves the AI remembers
 AI_WINDOW_SIZE = 20
 
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
-app.config['SESSION_FILE_DIR'] = '/session_data'
+template = """
+You are a helpful bot named Bob.
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+Current conversation:
+{history}
+Human: {input}
+AI Assistant:
+"""
 
-Session(app)
+system_message_prompt = SystemMessagePromptTemplate.from_template(template)
 
-# Function to create a new conversation object for a session
-def create_new_conversation():
-    chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
-    conversation = ConversationChain(
-        llm=chat, 
-        memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
-        verbose=True
-    )
-    return conversation
+human_template="{input}"
+human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+
+chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+
+
+# Initialize ChatOpenAI with the desired model
+chat = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+# Initialize ConversationChain with the appropriate parameters
+conversation = ConversationChain(
+    llm=chat, 
+    prompt=chat_prompt, 
+    memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
+    verbose=True
+)
 
 @app.route('/')
 def home():
-    if 'messages' not in session:
-        session['messages'] = []
+    # Render the chat interface
     return render_template('chat.html')
 
 @app.route('/initiate_chat', methods=['GET'])
 def initiate_chat():
-    session['messages'] = []
-    session['conversation'] = create_new_conversation()
-    response = session['conversation'].predict(input="""
-You are a bot named Bob- you answer with concise answers.
-    """)  # Your initiation text
-    session['messages'].append({'user': 'AI', 'message': response})
-    session.modified = True
+    # Trigger initial AI response with empty user input
+    response = conversation.predict(input="")
     return jsonify({'reply': response})
 
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json['message']
-    session['messages'].append({'user': 'User', 'message': user_input})
-    
-    conversation = session.get('conversation')
-    if conversation is None:
-        conversation = create_new_conversation()
-        session['conversation'] = conversation
-
     response = conversation.predict(input=user_input)
-    session['messages'].append({'user': 'AI', 'message': response})
-    session.modified = True
-
     return jsonify({'reply': response})
 
 if __name__ == '__main__':
