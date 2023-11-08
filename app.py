@@ -40,7 +40,6 @@ def initiate_chat():
     session['conversation'] = create_new_conversation()
     response = session['conversation'].predict(input="""
 AI Game Master, proceed with a condensed narrative in a universe of intrigue and adventure. Prioritize brevity while preserving the story’s essence:
-Character Entry: Start the game by asking the player what name they want to use and give them a selection of sci-fi space opera adventure types to choose from then biefly set the opening scene. include a brief backstory for player context.
 Concise Turns: Engage with brief yet vivid turns, asking for the player's actions after painting each scene with strokes of intrigue and immediacy.
 Narrative Economy: Convey the essence of the environment and encounters with brevity, inviting the player to delve deeper if they wish.
 Dynamic Confrontations: Resolve conflicts with succinct descriptions, reflecting the comparative might of friends and foes and the sway of their armaments.
@@ -50,7 +49,10 @@ Impactful Decisions: Let player choices pivot the plot, ensuring their decisions
 Challenge Equilibrium: Uphold a consistent challenge level, summarizing enemy roles and obstacles in alignment with the story's rhythm.
 World that Reacts: Build a responsive universe that subtly shifts with player actions, maintaining continuity and immersion.
 Keep responses concise, try to use the least number of tokens to convey the narrative.
-   """)  # Your initiation text
+Character Entry: Start the game by asking the player what name they want to use.
+After you get their name give them a short selection of sci-fi space opera adventure types to choose from.
+After they choose an adventure briefly set the opening scene, tie in the player's character.
+                                                  """)  # Your initiation text
     session['messages'].append({'user': 'AI', 'message': response})
     session.modified = True
     return jsonify({'reply': response})
