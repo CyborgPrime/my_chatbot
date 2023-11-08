@@ -1,67 +1,68 @@
-from flask import Flask, render_template, request, jsonify
-import os
-from langchain.chains import ConversationChain
+# Importing necessary libraries and classes for the Flask application
+from flask import Flask, render_template, request, jsonify, session
+from flask_session import Session  # Import for handling server-side sessions
+from langchain.chat_models import ChatOpenAI  # Import the ChatOpenAI class for AI chat functionality
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain.memory import ConversationBufferWindowMemory
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    SystemMessagePromptTemplate,
-    HumanMessagePromptTemplate,
-)
+from langchain.chains import ConversationChain
+import os
+import openai  # OpenAI's API library for Python
 
-# Flask app setup
+# Initializing the Flask application
 app = Flask(__name__)
 
-# Environment variable for OpenAI API key
-api_key = os.getenv("OPENAI_API_KEY")
-
-# AI Window Size - Number of moves the AI remembers
 AI_WINDOW_SIZE = 20
 
-template = """
-You are a helpful bot named Bob.
+# Configuring Flask session management to store session data on the filesystem
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")  # Secret key for sessions, retrieved from environment variable
+app.config['SESSION_FILE_DIR'] = './session_data'  # Directory to store session files, pointing to a mounted disk
 
-Current conversation:
-{history}
-Human: {input}
-AI Assistant:
-"""
+# Setting the OpenAI API key from an environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-system_message_prompt = SystemMessagePromptTemplate.from_template(template)
+# Initializing session management for the app
+Session(app)
 
-human_template="{input}"
-human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-
-chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
-
-
-# Initialize ChatOpenAI with the desired model
-chat = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-
-# Initialize ConversationChain with the appropriate parameters
+# Initializing the ChatOpenAI object with zero temperature and specifying the model version
+chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
 conversation = ConversationChain(
     llm=chat, 
-    prompt=chat_prompt, 
     memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
-    verbose=True
+    verbose=False
 )
 
+# Define a route for the main page which renders the index.html template
 @app.route('/')
-def home():
-    # Render the chat interface
-    return render_template('chat.html')
+def index():
+    return render_template('index.html')
 
-@app.route('/initiate_chat', methods=['GET'])
-def initiate_chat():
-    # Trigger initial AI response with empty user input
-    response = conversation.predict(input="")
-    return jsonify({'reply': response})
+# Define a route that handles the 'ask' POST request to process user input
+@app.route('/ask', methods=['POST'])
+def ask():
+    session_id = session.sid  # Retrieves the session ID unique to each user interaction
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_input = request.json['message']
-    response = conversation.predict(input=user_input)
-    return jsonify({'reply': response})
+    # If this is a new session, initialize the message list and add the initial system message
+    if session_id not in session:
+        session[session_id] = []
+        session[session_id].append(SystemMessage(content="You are a helpful assistant named Bob."))
 
+    messages = session[session_id]  # Retrieve the list of messages associated with the session ID
+    user_input = request.form['user_input']  # Get the user input from the submitted form
+    
+    # Add the human message to the message list
+    messages.append(HumanMessage(content=user_input))
+    # Generate AI response using the accumulated messages
+    ai_response = chat(messages=messages).content
+    # Add the AI response to the message list
+    messages.append(AIMessage(content=ai_response))
+
+    # Save the updated message list back into the session
+    session[session_id] = messages
+
+    # Send the AI response back to the frontend as JSON
+    return jsonify({'ai_response': ai_response})
+
+# Run the Flask app with debugging enabled
 if __name__ == '__main__':
     app.run(debug=True)
