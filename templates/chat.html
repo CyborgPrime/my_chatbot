@@ -56,7 +56,7 @@
             var chatBox = document.getElementById('chat-box');
             if (userInput.trim() !== '') {  // Check if the input is not just spaces
                 chatBox.innerHTML += `<div class="user-message">Player: ${userInput}</div>`;
-                chatBox.innerHTML += `<div id="waiting" class="bot-message">Waiting for GM...</div>`; // Add waiting placeholder with bot-message class for styling
+                chatBox.innerHTML += `<div id="waiting" class="bot-message">GM is thinking...</div>`; // Add waiting placeholder with bot-message class for styling
                 chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox
                 document.getElementById('user-input').value = '';  // Clear the input field
                 fetch('/chat', {
