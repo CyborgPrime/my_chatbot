@@ -1,77 +1,68 @@
+# Importing necessary libraries and classes for the Flask application
 from flask import Flask, render_template, request, jsonify, session
-from flask_session import Session
-from langchain.chat_models import ChatOpenAI
+from flask_session import Session  # Import for handling server-side sessions
+from langchain.chat_models import ChatOpenAI  # Import the ChatOpenAI class for AI chat functionality
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
 import os
-import openai
+import openai  # OpenAI's API library for Python
 
+# Initializing the Flask application
 app = Flask(__name__)
 
 AI_WINDOW_SIZE = 20
 
+# Configuring Flask session management to store session data on the filesystem
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
-app.config['SESSION_FILE_DIR'] = '/session_data'
+app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")  # Secret key for sessions, retrieved from environment variable
+app.config['SESSION_FILE_DIR'] = './session_data'  # Directory to store session files, pointing to a mounted disk
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+# Setting the OpenAI API key from an environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# Initializing session management for the app
 Session(app)
 
-# Function to create a new conversation object for a session
-def create_new_conversation():
-    chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
-    conversation = ConversationChain(
-        llm=chat, 
-        memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
-        verbose=True
-    )
-    return conversation
+# Initializing the ChatOpenAI object with zero temperature and specifying the model version
+chat = ChatOpenAI(temperature=0, model='gpt-3.5-turbo', verbose=True)
+conversation = ConversationChain(
+    llm=chat, 
+    memory=ConversationBufferWindowMemory(k=AI_WINDOW_SIZE),
+    verbose=False
+)
 
+# Define a route for the main page which renders the index.html template
 @app.route('/')
-def home():
-    if 'messages' not in session:
-        session['messages'] = []
-    return render_template('chat.html')
+def index():
+    return render_template('index.html')
 
-@app.route('/initiate_chat', methods=['GET'])
-def initiate_chat():
-    session['messages'] = []
-    session['conversation'] = create_new_conversation()
-    response = session['conversation'].predict(input="""
-Revised Prompt for ChatGPT as a Game Master in Traveller RPG Setting:
-Hello, ChatGPT! You're tasked with guiding me through an interactive narrative as a game master in a setting of the user's choosing. Here's how you can effectively conduct the session:
-Character Introduction: Begin by inquiring about the name I wish to be addressed by and the kind of adventure I'm seeking (e.g., discovery, intrigue, conflict).
-Turn-based Interaction: Conduct the game in a turn-based manner, detailing the environment and scenarios before asking for my character's actions.
-Narrative Focus: Utilize a sophisticated text-based adventure style, rich in detail and character interaction, to maintain a deep level of immersion.
-Conflict Resolution: When conflicts arise, forgo traditional game mechanics in favor of narrative-driven outcomes based on relative strengths and weaknesses.
-Enemies: Present adversaries with varying levels of difficulty—henchmen should pose little challenge, captains should be on par with my character, and bosses should be formidable.
-Equipment: Mention any relevant gear, such as weapons and armor, that my character or the adversaries possess, influencing the outcome of these encounters.
-Story Progression: Allow my decisions to drive the story forward, ensuring that my actions have significant effects on the development of events.
-Consistent Difficulty: Ensure that the difficulty of encounters is consistent with the narrative context and the roles of different adversaries as established above.
-Now, let's proceed with the story setup:
-Inside the briefing room of the Imperial Scout Services, the air is charged with anticipation. A grizzled veteran, marked by years of service, greets you with a nod.
-"Scout, your reputation precedes you. But before we chart your course among the stars, what name shall I call you by? And what sort of venture are you looking for? Are you in the mood for unearthing ancient secrets, engaging in shadowy diplomacy, or standing valiantly against the tide of space pirates?"                                               
-                                               """)  # Your initiation text
-    session['messages'].append({'user': 'AI', 'message': response})
-    session.modified = True
-    return jsonify({'reply': response})
+# Define a route that handles the 'ask' POST request to process user input
+@app.route('/ask', methods=['POST'])
+def ask():
+    session_id = session.sid  # Retrieves the session ID unique to each user interaction
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_input = request.json['message']
-    session['messages'].append({'user': 'User', 'message': user_input})
+    # If this is a new session, initialize the message list and add the initial system message
+    if session_id not in session:
+        session[session_id] = []
+        session[session_id].append(SystemMessage(content="You are a helpful assistant named Bob."))
+
+    messages = session[session_id]  # Retrieve the list of messages associated with the session ID
+    user_input = request.form['user_input']  # Get the user input from the submitted form
     
-    conversation = session.get('conversation')
-    if conversation is None:
-        conversation = create_new_conversation()
-        session['conversation'] = conversation
+    # Add the human message to the message list
+    messages.append(HumanMessage(content=user_input))
+    # Generate AI response using the accumulated messages
+    ai_response = chat(messages=messages).content
+    # Add the AI response to the message list
+    messages.append(AIMessage(content=ai_response))
 
-    response = conversation.predict(input=user_input)
-    session['messages'].append({'user': 'AI', 'message': response})
-    session.modified = True
+    # Save the updated message list back into the session
+    session[session_id] = messages
 
-    return jsonify({'reply': response})
+    # Send the AI response back to the frontend as JSON
+    return jsonify({'ai_response': ai_response})
 
+# Run the Flask app with debugging enabled
 if __name__ == '__main__':
     app.run(debug=True)
