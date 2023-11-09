@@ -54,11 +54,12 @@
         function sendUserMessage() {
             var userInput = document.getElementById('user-input').value;
             var chatBox = document.getElementById('chat-box');
-            if (userInput.trim() !== '') {  // Check if the input is not just spaces
+            if (userInput.trim() !== '') {
                 chatBox.innerHTML += `<div class="user-message">Player: ${userInput}</div>`;
-                chatBox.innerHTML += `<div id="waiting" class="bot-message">GM is thinking...</div>`; // Add waiting placeholder with bot-message class for styling
-                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox
-                document.getElementById('user-input').value = '';  // Clear the input field
+                chatBox.innerHTML += `<div id="waiting" class="bot-message">GM is thinking...</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                document.getElementById('user-input').value = '';
+
                 fetch('/chat', {
                     method: 'POST',
                     body: JSON.stringify({ 'message': userInput }),
@@ -68,12 +69,12 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Replace the placeholder with the bot's response when it comes back
+                    var formattedReply = data.reply.replace(/\n/g, '<br>'); // Replace newline characters with <br>
                     var waitingMessage = document.getElementById('waiting');
                     if (waitingMessage) {
-                        waitingMessage.outerHTML = `<div class="bot-message">GM: ${data.reply}</div>`;
+                        waitingMessage.outerHTML = `<div class="bot-message">GM: ${formattedReply}</div>`;
                     }
-                    chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox again
+                    chatBox.scrollTop = chatBox.scrollHeight;
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -85,6 +86,7 @@
             }
         }
 
+
         function handleEnter(event) {
             // Detect enter key press in the input field
             if (event.keyCode === 13) {
@@ -94,15 +96,17 @@
         }
 
         function initiateChat() {
-            // Send initial message to the server to start the conversation
             fetch('/initiate_chat')
             .then(response => response.json())
             .then(data => {
                 var chatBox = document.getElementById('chat-box');
-                chatBox.innerHTML = `<div class="bot-message">GM: ${data.reply}</div>`;  // Replace placeholder with initial bot message
-                chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chatbox
+                var formattedReply = data.reply.replace(/\n/g, '<br>'); // Replace newline characters with <br>
+                chatBox.innerHTML = `<div class="bot-message">GM: ${formattedReply}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
+
+
 
         // When the window loads, initiate the chat
         window.onload = initiateChat;
