@@ -14,6 +14,7 @@ ALLOWED_IP = '173.236.155.235'
 @app.before_request
 def limit_remote_addr():
     if request.remote_addr != ALLOWED_IP:
+        print(f"Access attempt from disallowed IP: {request.remote_addr}")
         abort(403)  # Forbidden
 
 
