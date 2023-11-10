@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session
 from flask_session import Session
+from flask_cors import CORS
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
@@ -7,6 +8,10 @@ import os
 import openai
 
 app = Flask(__name__)
+
+# Initialize CORS for specific domains
+CORS(app, resources={r"/*": {"origins": ["https://virtualgm.cyborgprime.com", "http://localhost", "http://127.0.0.1"]}})
+
 
 AI_WINDOW_SIZE = 20
 
@@ -68,7 +73,7 @@ Feedback-Driven Adaptive Challenges:
         Continuously adapt the game world and its challenges based on player responses, focusing on risk, reward, and environmental interaction.
 Welcome Player: "Welcome, adventurer! Ready to embark on an epic journey?"
 Name Inquiry: "What name shall I call you by?"
-Adventure Choice: Offer a selection of 3 adventures suitable for a Space Opera setting.
+Adventure Choice: after name selection, offer a selection of 3 popular Space Opera adventures suitable for solo play. 
 Seamless Integration: Once chosen, start with a brief opening scene that ties into the players character and chosen adventure.
                                                   """)  # Your initiation text
     session['messages'].append({'user': 'AI', 'message': response})
