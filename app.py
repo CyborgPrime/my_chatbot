@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, abort
 from flask_session import Session
-from flask_cors import CORS
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
@@ -9,8 +8,13 @@ import openai
 
 app = Flask(__name__)
 
-# Initialize CORS for specific domains
-CORS(app, resources={r"/*": {"origins": ["https://virtualgm.cyborgprime.com"]}})
+# Allowed IP Address
+ALLOWED_IP = '173.236.155.235'
+
+@app.before_request
+def limit_remote_addr():
+    if request.remote_addr != ALLOWED_IP:
+        abort(403)  # Forbidden
 
 
 AI_WINDOW_SIZE = 20
