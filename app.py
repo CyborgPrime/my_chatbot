@@ -10,7 +10,7 @@ import openai
 app = Flask(__name__)
 
 # Initialize CORS for specific domains
-CORS(app, resources={r"/*": {"origins": ["https://virtualgm.cyborgprime.com", "http://localhost", "http://127.0.0.1"]}})
+CORS(app, resources={r"/*": {"origins": ["https://virtualgm.cyborgprime.com"]}})
 
 
 AI_WINDOW_SIZE = 20
