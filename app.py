@@ -8,14 +8,6 @@ import openai
 
 app = Flask(__name__)
 
-# Allowed IP Address
-ALLOWED_IP = '173.236.155.235'
-
-@app.before_request
-def limit_remote_addr():
-    if request.remote_addr != ALLOWED_IP:
-        print(f"Access attempt from disallowed IP: {request.remote_addr}")
-        abort(403)  # Forbidden
 
 
 AI_WINDOW_SIZE = 20
