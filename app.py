@@ -80,10 +80,6 @@ Seamless Integration: Once chosen, start with a brief opening scene that ties in
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json['message']
-    
-    if 'messages' not in session:
-        session['messages'] = []
-
     session['messages'].append({'user': 'User', 'message': user_input})
     
     conversation = session.get('conversation')
@@ -96,7 +92,6 @@ def chat():
     session.modified = True
 
     return jsonify({'reply': response})
-
 
 if __name__ == '__main__':
     app.run(debug=True)
