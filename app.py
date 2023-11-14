@@ -16,7 +16,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY")
 app.config['SESSION_FILE_DIR'] = '/session_data'
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 Session(app)
 
@@ -80,6 +80,10 @@ Seamless Integration: Once chosen, start with a brief opening scene that ties in
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json['message']
+    
+    if 'messages' not in session:
+        session['messages'] = []
+
     session['messages'].append({'user': 'User', 'message': user_input})
     
     conversation = session.get('conversation')
@@ -92,6 +96,7 @@ def chat():
     session.modified = True
 
     return jsonify({'reply': response})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
